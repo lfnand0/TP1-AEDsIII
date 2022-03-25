@@ -2,54 +2,88 @@ package dao;
 
 import java.io.*;
 import java.text.*;
+import java.util.*;
 
 import manager.*;
 
 public class Dao {
+  static Scanner sc = new Scanner(System.in);
+
   protected int idConta;
   protected String nomePessoa;
-  protected int cpf;
+  protected String cpf;
   protected String cidade;
   protected int transferenciasRealizadas;
   protected float saldoConta;
-  protected Manager manager = new Manager("db/bank.db");
+  protected Manager manager = new Manager("../db/bank.db");
 
   /* NULL Constructor */
-  public Dao() {    
+  public Dao() {
     this.idConta = -1;
     this.nomePessoa = "";
-    this.cpf = -1;
+    this.cpf = "";
     this.cidade = "";
     this.transferenciasRealizadas = 0;
     this.saldoConta = 0.00F;
   }
 
-  /* Constructors */ 
-  public Dao(int idConta, String nome, int cpf, String cidade) {
-    this(idConta, nome, cpf, cidade, 0, 0.00F);
-  }
-
-  public Dao(int idConta, String nome, int cpf, String cidade, int transferenciasRealizadas, float saldoConta) {
-    this.idConta = idConta;
-    this.nomePessoa = nome;
-    this.cpf = cpf;
-    this.cidade = cidade;
-    this.transferenciasRealizadas = transferenciasRealizadas;
-    this.saldoConta = saldoConta;
-  }
-
-  public Dao(String nome, int cpf, String cidade) {
+  /* Constructors */
+  public Dao(String nome, String cpf, String cidade) {
     this.idConta = manager.getMaxId(true);
     this.nomePessoa = nome;
     this.cpf = cpf;
     this.cidade = cidade;
     this.transferenciasRealizadas = 0;
-    this.saldoConta = 0.00F;;
-  }  
+    this.saldoConta = 0.00F;
+  }
+
+  public int getId() {
+    return this.idConta;
+  }
+
+  public String getNomePessoa() {
+    return this.nomePessoa;
+  }
+
+  public String getCpf() {
+    return this.cpf;
+  }
+
+  public String getCidade() {
+    return this.cidade;
+  }
+
+  public int getTransferenciasRealizadas() {
+    return this.transferenciasRealizadas;
+  }
+
+  public float getSaldoConta() {
+    return this.saldoConta;
+  }
+
+  public void setNomePessoa(String nomePessoa) {
+    this.nomePessoa = nomePessoa;
+  }
+
+  public void setCpf(String cpf) {
+    this.cpf = cpf;
+  }
+
+  public void setCidade(String cidade) {
+    this.cidade = cidade;
+  }
+
+  public void setTransferenciasRealizadas(int transferenciasRealizadas) {
+    this.transferenciasRealizadas = transferenciasRealizadas;
+  }
+
+  public void setSaldoConta(float saldoConta) {
+    this.saldoConta = saldoConta;
+  }
 
   public int create() {
     try {
-      if(manager.appendToFile(toByteArray())){
+      if (manager.appendToFile(toByteArray())) {
         return this.idConta;
       }
     } catch (Exception e) {
@@ -58,18 +92,86 @@ public class Dao {
     return -1;
   }
 
-  public void read(int id){
+  public Dao read(int id) {
+    // Dao conta = 
+    return manager.getMaxId() >= id ? manager.read(id) : new Dao();
+  }
+
+  public boolean update() {
+
+    if (manager.findIdPointer(this.idConta) == -1) {
+      return false;
+    }
+
+    String nomePessoaNovo = this.nomePessoa;
+    String cpfNovo = this.cpf;
+    String cidadeNovo = this.cidade;
+    int transferenciasRealizadasNovo = this.transferenciasRealizadas;
+    float saldoContaNovo = this.saldoConta;
+
+    System.out.println("\n1. Atualizar nome;");
+    System.out.println("2. Atualizar CPF;");
+    System.out.println("3. Atualizar cidade;");
+    System.out.println("4. Atualizar número de transferências realizadas;");
+    System.out.println("5. Atualizar saldo;");
+    System.out.println("6. Sair;");
+    System.out.print("Escolha uma opção: ");
+
+    int choiceUpdate = sc.nextInt();
+
+    while (choiceUpdate < 1 || choiceUpdate > 6) {
+      System.out.print("Digite um valor de 1 a 6: ");
+      choiceUpdate = sc.nextInt();
+    }
+
+    sc.nextLine();
+
+    switch (choiceUpdate) {
+      case 1:
+        System.out.print("Digite o novo nome: ");
+        nomePessoaNovo = sc.nextLine();
+        break;
+      case 2:
+        System.out.print("Digite o novo CPF: ");
+        cpfNovo = sc.nextLine();
+        break;
+      case 3:
+        System.out.print("Digite a nova cidade: ");
+        cidadeNovo = sc.nextLine();
+        break;
+      case 4:
+        System.out.print("Digite o novo número de transferências realizadas: ");
+        transferenciasRealizadasNovo = sc.nextInt();
+        sc.nextLine();
+        break;
+      case 5:
+        System.out.print("Digite o novo saldo: ");
+        saldoContaNovo = sc.nextFloat();
+        sc.nextLine();
+        break;
+      case 6:
+        return false;
+    }
+
+    this.nomePessoa = (nomePessoaNovo != this.nomePessoa) ? nomePessoaNovo : this.nomePessoa;
+    this.cpf = (cpfNovo != this.cpf) ? cpfNovo : this.cpf;
+    this.cidade = (cidadeNovo != this.cidade) ? cidadeNovo : this.cidade;
+    this.transferenciasRealizadas = (transferenciasRealizadasNovo != this.transferenciasRealizadas)
+        ? transferenciasRealizadasNovo
+        : this.transferenciasRealizadas;
+    this.saldoConta = (saldoContaNovo != this.saldoConta) ? saldoContaNovo : this.saldoConta;
+
+    boolean retorno = false;
     try {
-      
-      
-
-
-      fromByteArray();
-
-
+      System.out.println("Debug dao.update: this.idConta = " + this.idConta);
+      retorno = manager.update(toByteArray(), this.idConta);
     } catch (Exception e) {
     }
-    //return object;
+    return retorno;
+  }
+
+  public boolean delete(int id) {
+    return manager.delete(id);
   }
 
   /* PRINT */
@@ -91,7 +193,7 @@ public class Dao {
 
     dos.writeInt(this.idConta);
     dos.writeUTF(this.nomePessoa);
-    dos.writeInt(this.cpf);
+    dos.writeUTF(this.cpf);
     dos.writeUTF(this.cidade);
     dos.writeInt(this.transferenciasRealizadas);
     dos.writeFloat(this.saldoConta);
@@ -100,13 +202,13 @@ public class Dao {
   }
 
   /* Read form file */
-  private void fromByteArray(byte[] ba) throws IOException {
+  public void fromByteArray(byte[] ba) throws IOException {
     ByteArrayInputStream bais = new ByteArrayInputStream(ba);
     DataInputStream dis = new DataInputStream(bais);
 
     idConta = dis.readInt();
     nomePessoa = dis.readUTF();
-    cpf = dis.readInt();
+    cpf = dis.readUTF();
     cidade = dis.readUTF();
     transferenciasRealizadas = dis.readInt();
     saldoConta = dis.readFloat();

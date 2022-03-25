@@ -2,6 +2,8 @@ package manager;
 
 import java.io.*;
 
+import dao.*;
+
 public class Manager {
   private String dbPath = "";
 
@@ -11,9 +13,8 @@ public class Manager {
 
   private boolean dbExists() {
     boolean exists = false;
-    System.out.println("dbExists");
-
     RandomAccessFile arq;
+
     try {
       arq = new RandomAccessFile(dbPath, "rw");
       arq.close();
@@ -25,7 +26,6 @@ public class Manager {
     if (f.exists() && !f.isDirectory()) {
       exists = true;
     }
-
     return exists;
   }
 
@@ -36,8 +36,8 @@ public class Manager {
    * - Ou soma +1 e o atualiza e o retorna
    */
   public int getMaxId(boolean update) {
-    RandomAccessFile arq;
     int maxId = 0;
+    RandomAccessFile arq;
 
     dbExists();
     try {
@@ -53,9 +53,7 @@ public class Manager {
 
       arq.close();
     } catch (Exception e) {
-      System.out.println(e);
     }
-
     return maxId;
   }
 
@@ -63,31 +61,51 @@ public class Manager {
     return getMaxId(false);
   }
 
+  /*
+   * 
+   * 
+   * 
+   * 
+   */
   public long findIdPointer(int id) {
     long returns = -1;
+    RandomAccessFile arq;
+
     try {
-      RandomAccessFile arq = new RandomAccessFile(dbPath, "rw");
+      arq = new RandomAccessFile(dbPath, "rw");
 
       arq.seek(0);
       int maxId = arq.readInt();
+      // System.out.println("findIdPointer debug: maxId = " + maxId + "; id = " + id);
+      
       if (id <= maxId) {
-        for (int i = id; i > 1; i--) {
-          arq.readBoolean(); // Lápide
-          int tam = arq.readInt(); // Tamanho do arr
-          arq.seek(arq.getFilePointer() + tam);
-        }
+        int foundId = 0;
+        long pointer = arq.getFilePointer();
+        while (pointer < arq.length() - 4) {
+          boolean lapide = arq.readBoolean();
+          int tam = arq.readInt();
 
-        boolean lapide = arq.readBoolean();
+          foundId = arq.readInt();
+          pointer = arq.getFilePointer();
 
-        if (!lapide) {
-          returns = arq.getFilePointer() - 1;
+          if (foundId != id || !lapide) {
+            pointer += tam - 4; // antes da lapide
+            arq.seek(pointer);
+          } else {
+            pointer -= 8;
+            returns = pointer;
+            break;
+          }
         }
       }
+
+      // System.out.println("returns = " + returns);
 
       arq.close();
     } catch (Exception e) {
     }
 
+    // System.out.println("returns = " + returns);
     return returns;
   }
 
@@ -100,6 +118,7 @@ public class Manager {
    */
   public boolean appendToFile(byte[] arr) {
     RandomAccessFile arq;
+
     try {
       arq = new RandomAccessFile(dbPath, "rw");
       arq.seek(arq.length());
@@ -109,22 +128,102 @@ public class Manager {
       arq.close();
     } catch (Exception e) {
     }
+
     return true;
   }
 
-  /*public byte [] read(int id){
+  public Dao read(int id){
     byte[] ba;
     RandomAccessFile arq;
+    Dao conta = new Dao();
+
+    if (findIdPointer(id) == -1) {
+      return conta;
+    }
 
     try{
       arq = new RandomAccessFile(dbPath, "rw");
+      
+      arq.seek(findIdPointer(id) + 4); // +4 pois o findIdPointer retorna a posicao antes do registro tam
+      // int tam = arq.readInt();
+      
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      DataOutputStream dos = new DataOutputStream(baos);
+      
+      int idConta = arq.readInt();
+      String nomePessoa = arq.readUTF();
+      String cpf = arq.readUTF();
+      String cidade = arq.readUTF();
+      int transferenciasRealizadas = arq.readInt();
+      float saldoConta = arq.readFloat();
+      System.out.println("read debug");
+      
+      dos.writeInt(idConta);
+      dos.writeUTF(nomePessoa);
+      dos.writeUTF(cpf);
+      dos.writeUTF(cidade);
+      dos.writeInt(transferenciasRealizadas);
+      dos.writeFloat(saldoConta);
+
+      ba = baos.toByteArray();
+      conta.fromByteArray(ba);
+
+      arq.close();
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+
+    return conta;
+  }
+
+  public boolean update(byte[] ba, int id) {
+    RandomAccessFile arq;
+
+    if (ba.length == 0 || findIdPointer(id) == -1) {
+      return false;
+    }
+
+    try {
+      arq = new RandomAccessFile(dbPath, "rw");
+      System.out.println("Debug manager.update: id = " + id + "; " + findIdPointer(id));
       arq.seek(findIdPointer(id));
-      ba = new byte[arq.readInt()];
-      arq.read(ba);
+      int tam = arq.readInt();
+
+      if (ba.length <= tam) {
+        System.out.println("man.update first if");
+        arq.write(ba);
+      } else {
+        Dao temp = new Dao();
+        temp = temp.read(id);
+        System.out.println("man.update second if");
+        delete(id);
+        appendToFile(ba);
+      }
+      System.out.println("man.update after if");
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+
+    return true;
+  }
+
+  public boolean delete(int id) {
+    RandomAccessFile arq;
+    boolean tf = false;
+
+    try {
+      arq = new RandomAccessFile(dbPath, "rw");
+      long pos = findIdPointer(id) - 1;
+
+      if (pos > 0) {
+        arq.seek(pos);
+        arq.writeBoolean(false);
+        tf = true;
+      }
+
       arq.close();
     } catch (Exception e) {
     }
-
-    return ba;
-  }*/
+    return tf;
+  }
 }

@@ -1,11 +1,12 @@
 import java.util.*;
+
 import dao.*;
 
 public class App {
     static Scanner sc = new Scanner(System.in);
     static Dao conta;
 
-    public static void bankInterface() {
+    public static int bankInterface() {
         int choice = 0;
 
         System.out.println("-----Conta Bancária-----");
@@ -19,9 +20,8 @@ public class App {
 
         System.out.print("Escolha uma opção: ");
         choice = sc.nextInt();
-
         while (choice < 1 || choice > 6) {
-            System.out.println("Escolha um valor de 1 a 6: ");
+            System.out.print("Digite um valor de 1 a 6: ");
             choice = sc.nextInt();
         }
 
@@ -32,35 +32,95 @@ public class App {
                 String nome = sc.nextLine();
 
                 System.out.print("Digite o cpf: ");
-                int cpf = sc.nextInt();
+                // sc.nextLine();
+                String cpf = sc.nextLine();
 
                 System.out.print("Digite a cidade: ");
-                sc.nextLine();
+                // sc.nextLine();
                 String cidade = sc.nextLine();
 
                 conta = new Dao(nome, cpf, cidade);
+                int resust = conta.create();
 
-                System.out.println("Seu ID é " + conta.create());
-                System.out.println(conta.toString());
-            break;
+                if (resust != -1) {
+                    System.out.print("\n CONTA CRIADA COM SUCESSO");
+                    System.out.println(conta.toString());
+                } else {
+                    System.out.println("Houve um ERRO ao tentar criar sua conta");
+                }
+                break;
 
             case 2:
-            break;
+
+                break;
 
             case 3:
-            break;
+                System.out.print("\nDigite o ID da conta que deseja buscar: ");
+                int idRead = sc.nextInt();
+
+                while (idRead <= 0) {
+                    System.out.print("Digite um ID válido (maior que 0): ");
+                    idRead = sc.nextInt();
+                }
+
+                conta = new Dao();
+                conta = conta.read(idRead);
+
+                if (conta.getId() != -1) {
+                    System.out.println(conta);
+                } else {
+                    System.out.println("Conta não encontrada.");
+                }
+
+                break;
 
             case 4:
-            break;
+                System.out.print("\nDigite o ID da conta a ser atualizada: ");
+                int idUpdate = sc.nextInt();
+
+                while (idUpdate <= 0) {
+                    System.out.print("Digite um ID válido (maior que 0): ");
+                    idUpdate = sc.nextInt();
+                }
+
+                conta = new Dao();
+                conta = conta.read(idUpdate);
+                // System.out.println("Debug main.update: idUpdate = " + idUpdate);
+                conta.toString();
+                boolean worked = conta.update();
+                if (worked) {
+                    System.out.println("Conta atualizada com sucesso!");
+                } else {
+                    System.out.println("Erro ao atualizar conta.");
+                }
+
+                break;
 
             case 5:
-            break;
+                System.out.print("\nDigite o ID da conta a ser deletada: ");
+                int idDelete = sc.nextInt();
+
+                while (idDelete <= 0) {
+                    System.out.print("Digite um ID válido (maior que 0): ");
+                    idDelete = sc.nextInt();
+                }
+
+                conta = new Dao();
+
+                if (conta.delete(idDelete)) {
+                    System.out.println("A conta de ID " + idDelete + " foi deletada com sucesso");
+                } else {
+                    System.out.println("Erro ao deletar conta de ID " + idDelete);
+                }
+                break;
 
             case 6:
 
+                break;
         }
 
         sc.close();
+        return choice;
     }
 
     public static void main(String[] args) throws Exception {

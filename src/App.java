@@ -10,11 +10,13 @@ public class App {
      * Função responsável por gerar as opções do aplicativo,
      * podendo o usuário escolher a operação desejada
      * 
-     * Cada opção chamará a(s) função(ões) responsável(is) 
+     * Cada opção chamará a(s) função(ões) responsável(is)
      * pela operação na classe DAO
      * 
      * 
-     * @return 
+     * @return int: O retorno é utilizado na execução principal
+     *         (main) para que o aplicativo apenas pare de executar
+     *         quando o valor de @choice for 6
      */
     public static int bankInterface() {
         int choice = 0;
@@ -62,17 +64,34 @@ public class App {
             case 2:
                 System.out.print("\nDigite o ID da sua conta: ");
                 int idA = sc.nextInt();
+
+                if (!Dao.idIsValid(idA)) {
+                    System.out.print("ID inválido.");
+                    break;
+                }
+
                 conta = new Dao(idA);
                 System.out.println(conta);
 
                 System.out.print("\nDigite o ID da conta que receberá: ");
                 int idB = sc.nextInt();
 
+                while (idB == idA) {
+                    System.out.println("Selecione um ID diferente do seu: ");
+                    idB = sc.nextInt();
+                }
+
+                if (!Dao.idIsValid(idB)) {
+                    System.out.print("ID inválido.");
+                    break;
+                }
+
                 System.out.print("Digite o valor a ser transferido: ");
                 float valor = sc.nextFloat();
 
                 if (conta.transfer(idB, valor)) {
-                    System.out.println("\nTransferência bem sucedida (Seu novo saldo é de " + conta.getSaldoConta() + ").");
+                    System.out.println(
+                            "\nTransferência bem sucedida (Seu novo saldo é de " + conta.getSaldoConta() + ").");
                 } else {
                     System.out.println("\nID não encontrado ou saldo insuficiente");
                 }
@@ -87,12 +106,17 @@ public class App {
                     id = sc.nextInt();
                 }
 
+                if (!Dao.idIsValid(id)) {
+                    System.out.println("Conta não encontrada.");
+                    break;
+                }
                 conta = new Dao(id);
+                conta.toString();
 
                 if (conta.getId() != -1) {
                     System.out.println(conta);
                 } else {
-                    System.out.println("Conta não encontrada.");
+                    System.out.println("Erro ao atualizar.");
                 }
 
                 break;
@@ -101,18 +125,14 @@ public class App {
                 System.out.print("\nDigite o ID da conta a ser atualizada: ");
                 id = sc.nextInt();
 
-                while (id <= 0) {
-                    System.out.print("Digite um ID válido (maior que 0): ");
-                    id = sc.nextInt();
+                if (!Dao.idIsValid(id)) {
+                    System.out.println("ID inválido.");
                 }
 
                 conta = new Dao(id);
                 System.out.println(conta);
 
-                boolean worked = conta.update();
-                if (worked) {
-                    System.out.println("Conta atualizada com sucesso!");
-                } else {
+                if (!conta.update()) {
                     System.out.println("Erro ao atualizar conta.");
                 }
 
@@ -145,8 +165,7 @@ public class App {
     }
 
     public static void main(String[] args) throws Exception {
-        while (bankInterface() != 6)
-            ;
+        while (bankInterface() != 6) {}
 
         sc.close();
     }

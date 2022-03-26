@@ -17,7 +17,13 @@ public class Dao {
   protected float saldoConta;
   protected Manager manager = new Manager("../db/bank.db");
 
-  /* NULL Constructor */
+  /* CONSTRUTORES */
+
+  /**
+   * Construtor vazio, gera um objeto com parâmetros
+   * inválidos
+   * 
+   */
   public Dao() {
     this.idConta = -1;
     this.nomePessoa = "";
@@ -27,7 +33,25 @@ public class Dao {
     this.saldoConta = 0.00F;
   }
 
-  /* Constructors */
+  /**
+   * Construtor que gera uma classe e a popula com o
+   * registro equivalente ao ID passado como parâmetro
+   * 
+   * @param id: ID do registro a ser clonado
+   */
+  public Dao(int id) {
+    this();
+    Dao conta = Dao.read(id);
+    this.clone(conta);
+  }
+
+  /**
+   * Construtor comum
+   * 
+   * @param nome:   Nome a ser atribuido
+   * @param cpf:    CPF a ser atribuido
+   * @param cidade: Cidade a ser atribuida
+   */
   public Dao(String nome, String cpf, String cidade) {
     this.idConta = manager.getMaxId(true);
     this.nomePessoa = nome;
@@ -37,11 +61,7 @@ public class Dao {
     this.saldoConta = 0.00F;
   }
 
-  public Dao(int id) {
-    this();
-    Dao conta = Dao.read(id);
-    this.clone(conta);
-  }
+  /* GETTERS E SETTERS */
 
   public int getId() {
     return this.idConta;
@@ -87,6 +107,18 @@ public class Dao {
     this.saldoConta = saldoConta;
   }
 
+  /* CRUD */
+
+  /**
+   * CREATE: Função para criar uma conta nova
+   * 
+   * Gera um array de bytes com as informações
+   * atribuídas ao objeto (toByteArray()),
+   * e as adiciona ao fim do arquivo
+   * (manager.appendToFile())
+   * 
+   * @return int: ID da conta criada
+   */
   public int create() {
     try {
       if (manager.appendToFile(toByteArray())) {
@@ -98,6 +130,16 @@ public class Dao {
     return -1;
   }
 
+  /**
+   * READ: Leitura de registros
+   * 
+   * Busca no arquivo o registro com o ID
+   * recebido como parâmetro (Manager.read(id)),
+   * e o retorno como um objeto DAO
+   * 
+   * @param id: ID do registro a ser retornado
+   * @return Dao: Registro formatado como objeto
+   */
   public static Dao read(int id) {
     Dao conta = new Dao();
 
@@ -106,6 +148,24 @@ public class Dao {
     return conta;
   }
 
+  /**
+   * UPDATE: Atualização de registros
+   * 
+   * O usuário receberá um prompt para
+   * selecionar os campos que deseja
+   * atualizar, que por sua vez serão
+   * salvos como um objeto Dao, que é
+   * convertido para um array de bytes
+   * (toByteArray()) e passado para a
+   * função manager.update() juntamente
+   * ao ID do registro para que possa
+   * ser adicionado ao arquivo.
+   * 
+   * 
+   * @return boolean: retorna false caso
+   *         a atualização não dê certo, e true
+   *         caso seja bem sucessida.
+   */
   public boolean update() {
 
     if (Manager.findIdPointer(this.idConta) == -1) {
@@ -117,8 +177,10 @@ public class Dao {
     String cidadeNovo = this.cidade;
     int transferenciasRealizadasNovo = this.transferenciasRealizadas;
     float saldoContaNovo = this.saldoConta;
+
+    boolean retorno = false;
     int choiceUpdate = 0;
-    
+    int changed = 0;
 
     while (choiceUpdate != 6) {
       System.out.println("\n1. Atualizar nome;");
@@ -126,7 +188,7 @@ public class Dao {
       System.out.println("3. Atualizar cidade;");
       System.out.println("4. Atualizar número de transferências realizadas;");
       System.out.println("5. Atualizar saldo;");
-      
+
       if (choiceUpdate == 0) {
         System.out.println("6. Sair;");
       } else {
@@ -142,6 +204,10 @@ public class Dao {
       }
 
       sc.nextLine();
+
+      if (choiceUpdate != 6) {
+        changed++;
+      }
 
       switch (choiceUpdate) {
         case 1:
@@ -169,22 +235,43 @@ public class Dao {
       }
     }
 
-    this.nomePessoa = (nomePessoaNovo != this.nomePessoa) ? nomePessoaNovo : this.nomePessoa;
-    this.cpf = (cpfNovo != this.cpf) ? cpfNovo : this.cpf;
-    this.cidade = (cidadeNovo != this.cidade) ? cidadeNovo : this.cidade;
-    this.transferenciasRealizadas = (transferenciasRealizadasNovo != this.transferenciasRealizadas)
-        ? transferenciasRealizadasNovo
-        : this.transferenciasRealizadas;
-    this.saldoConta = (saldoContaNovo != this.saldoConta) ? saldoContaNovo : this.saldoConta;
+    if (changed != 0) {
+      this.nomePessoa = (nomePessoaNovo != this.nomePessoa) ? nomePessoaNovo : this.nomePessoa;
+      this.cpf = (cpfNovo != this.cpf) ? cpfNovo : this.cpf;
+      this.cidade = (cidadeNovo != this.cidade) ? cidadeNovo : this.cidade;
+      this.transferenciasRealizadas = (transferenciasRealizadasNovo != this.transferenciasRealizadas)
+          ? transferenciasRealizadasNovo
+          : this.transferenciasRealizadas;
+      this.saldoConta = (saldoContaNovo != this.saldoConta) ? saldoContaNovo : this.saldoConta;
 
-    boolean retorno = false;
-    try {
-      retorno = manager.update(toByteArray(), this.idConta);
-    } catch (Exception e) {
+      
+      try {
+        retorno = manager.update(toByteArray(), this.idConta);
+      } catch (Exception e) {
+      }
+
+      System.out.println("Conta atualizada com sucesso!");
+      
+    } else {
+      retorno = true;
     }
+
     return retorno;
   }
 
+  /**
+   * DELETE: Apaga um registro do arquivo
+   * 
+   * Função auxiliar que passa o ID de um
+   * registro a ser deletado para a função
+   * manager.delete()
+   * 
+   * @param id: ID de um registro a ser
+   *            deletado
+   * 
+   * @return boolean: true caso operação
+   *         seja bem sucessida, false caso contrário
+   */
   public boolean delete(int id) {
     return manager.delete(id);
   }

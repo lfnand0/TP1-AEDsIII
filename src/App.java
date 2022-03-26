@@ -60,9 +60,9 @@ public class App {
                 String cidade = sc.nextLine();
 
                 conta = new Dao(nome, cpf, cidade);
-                int resust = conta.create();
+                id = conta.create();
 
-                if (resust != -1) {
+                if (id != -1) {
                     System.out.print("\n CONTA CRIADA COM SUCESSO");
                     System.out.println(conta.toString());
                 } else {

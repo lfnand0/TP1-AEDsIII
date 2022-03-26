@@ -117,49 +117,56 @@ public class Dao {
     String cidadeNovo = this.cidade;
     int transferenciasRealizadasNovo = this.transferenciasRealizadas;
     float saldoContaNovo = this.saldoConta;
+    int choiceUpdate = 0;
+    
 
-    System.out.println("\n1. Atualizar nome;");
-    System.out.println("2. Atualizar CPF;");
-    System.out.println("3. Atualizar cidade;");
-    System.out.println("4. Atualizar número de transferências realizadas;");
-    System.out.println("5. Atualizar saldo;");
-    System.out.println("6. Sair;");
-    System.out.print("Escolha uma opção: ");
+    while (choiceUpdate != 6) {
+      System.out.println("\n1. Atualizar nome;");
+      System.out.println("2. Atualizar CPF;");
+      System.out.println("3. Atualizar cidade;");
+      System.out.println("4. Atualizar número de transferências realizadas;");
+      System.out.println("5. Atualizar saldo;");
+      
+      if (choiceUpdate == 0) {
+        System.out.println("6. Sair;");
+      } else {
+        System.out.println("6. Confirmar alterações;");
+      }
+      System.out.print("\nEscolha uma opção: ");
 
-    int choiceUpdate = sc.nextInt();
-
-    while (choiceUpdate < 1 || choiceUpdate > 6) {
-      System.out.print("Digite um valor de 1 a 6: ");
       choiceUpdate = sc.nextInt();
-    }
 
-    sc.nextLine();
+      while (choiceUpdate < 1 || choiceUpdate > 6) {
+        System.out.print("Digite um valor de 1 a 6: ");
+        choiceUpdate = sc.nextInt();
+      }
 
-    switch (choiceUpdate) {
-      case 1:
-        System.out.print("Digite o novo nome: ");
-        nomePessoaNovo = sc.nextLine();
-        break;
-      case 2:
-        System.out.print("Digite o novo CPF: ");
-        cpfNovo = sc.nextLine();
-        break;
-      case 3:
-        System.out.print("Digite a nova cidade: ");
-        cidadeNovo = sc.nextLine();
-        break;
-      case 4:
-        System.out.print("Digite o novo número de transferências realizadas: ");
-        transferenciasRealizadasNovo = sc.nextInt();
-        sc.nextLine();
-        break;
-      case 5:
-        System.out.print("Digite o novo saldo: ");
-        saldoContaNovo = sc.nextFloat();
-        sc.nextLine();
-        break;
-      case 6:
-        return false;
+      sc.nextLine();
+
+      switch (choiceUpdate) {
+        case 1:
+          System.out.print("Digite o novo nome: ");
+          nomePessoaNovo = sc.nextLine();
+          break;
+        case 2:
+          System.out.print("Digite o novo CPF: ");
+          cpfNovo = sc.nextLine();
+          break;
+        case 3:
+          System.out.print("Digite a nova cidade: ");
+          cidadeNovo = sc.nextLine();
+          break;
+        case 4:
+          System.out.print("Digite o novo número de transferências realizadas: ");
+          transferenciasRealizadasNovo = sc.nextInt();
+          sc.nextLine();
+          break;
+        case 5:
+          System.out.print("Digite o novo saldo: ");
+          saldoContaNovo = sc.nextFloat();
+          sc.nextLine();
+          break;
+      }
     }
 
     this.nomePessoa = (nomePessoaNovo != this.nomePessoa) ? nomePessoaNovo : this.nomePessoa;
@@ -257,10 +264,10 @@ public class Dao {
 
   public static boolean idIsValid(int id) {
     boolean returns = false;
-    
-    if (Manager.findIdPointer(id) != -1) 
+
+    if (Manager.findIdPointer(id) != -1)
       returns = true;
 
-    return returns; 
+    return returns;
   }
 }

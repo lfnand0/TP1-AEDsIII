@@ -6,6 +6,16 @@ public class App {
     static Scanner sc = new Scanner(System.in);
     static Dao conta;
 
+    /**
+     * Função responsável por gerar as opções do aplicativo,
+     * podendo o usuário escolher a operação desejada
+     * 
+     * Cada opção chamará a(s) função(ões) responsável(is) 
+     * pela operação na classe DAO
+     * 
+     * 
+     * @return 
+     */
     public static int bankInterface() {
         int choice = 0;
 
@@ -55,14 +65,14 @@ public class App {
                 conta = new Dao(idA);
                 System.out.println(conta);
 
-                System.out.print("\nDigite o ID da a conta que sera transferido: ");
+                System.out.print("\nDigite o ID da conta que receberá: ");
                 int idB = sc.nextInt();
 
                 System.out.print("Digite o valor a ser transferido: ");
                 float valor = sc.nextFloat();
 
                 if (conta.transfer(idB, valor)) {
-                    System.out.println("\nTransferencia bem sucedida seu saldo é de " + conta.getSaldoConta());
+                    System.out.println("\nTransferência bem sucedida (Seu novo saldo é de " + conta.getSaldoConta() + ").");
                 } else {
                     System.out.println("\nID não encontrado ou saldo insuficiente");
                 }

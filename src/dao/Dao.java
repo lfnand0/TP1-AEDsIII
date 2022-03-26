@@ -6,6 +6,18 @@ import java.util.*;
 
 import manager.*;
 
+
+/**
+ * CLASSE DAO
+ * 
+ * Segunda camada da execução do programa, responsável
+ * por organizar e armazenar temporariamente os dados, 
+ * receber ordens do App.java,validar inputs e por fim
+ * realizar chamadas ao Manager
+ * 
+ * Não realiza operações diretamente no arquivo 
+ * 
+ */
 public class Dao {
   static Scanner sc = new Scanner(System.in);
 
@@ -164,7 +176,7 @@ public class Dao {
    * 
    * @return boolean: retorna false caso
    *         a atualização não dê certo, e true
-   *         caso seja bem sucessida.
+   *         caso seja bem-sucedida.
    */
   public boolean update() {
 
@@ -244,14 +256,13 @@ public class Dao {
           : this.transferenciasRealizadas;
       this.saldoConta = (saldoContaNovo != this.saldoConta) ? saldoContaNovo : this.saldoConta;
 
-      
       try {
         retorno = manager.update(toByteArray(), this.idConta);
       } catch (Exception e) {
       }
 
       System.out.println("Conta atualizada com sucesso!");
-      
+
     } else {
       retorno = true;
     }
@@ -270,12 +281,25 @@ public class Dao {
    *            deletado
    * 
    * @return boolean: true caso operação
-   *         seja bem sucessida, false caso contrário
+   *         seja bem-sucedida, false caso contrário
    */
   public boolean delete(int id) {
     return manager.delete(id);
   }
 
+  /**
+   * TRANSFER: Transfere um valor do objeto
+   * ao registro cujo ID é recebido como parâmetro
+   * 
+   * Realiza checagem se o saldo da conta remetente
+   * é suficiente para a transferência
+   * 
+   * @param id:    ID da conta destinatária
+   * @param valor: Valor a ser transferido
+   * @return boolean: true ou false caso a
+   *         transferência tenha sido bem-sucedida
+   *         ou não
+   */
   public boolean transfer(int id, float valor) {
     Dao conta = new Dao(id);
     boolean retorno = false;
@@ -300,7 +324,11 @@ public class Dao {
     return retorno;
   }
 
-  /* PRINT */
+  /**
+   * Função auxiliar que imprime os atributos
+   * do objeto formatadamente
+   * 
+   */
   public String toString() {
     DecimalFormat df = new DecimalFormat("#,##0.00");
 
@@ -312,7 +340,14 @@ public class Dao {
         "\n Saldo..........: R$ " + df.format(this.saldoConta);
   }
 
-  /* Write on file */
+  /**
+   * Converte o objeto à um array de bytes
+   * 
+   * @return byte[]: Array de bytes contendo
+   *         os atributos do objeto
+   * @throws IOException: necessário para os métodos de
+   *                      escrita (write) da classe DataOutputStream
+   */
   private byte[] toByteArray() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);
@@ -327,7 +362,14 @@ public class Dao {
     return baos.toByteArray();
   }
 
-  /* Read form file */
+  /**
+   * Lê um array de bytes e atribui
+   * seu conteúdo ao objeto
+   * 
+   * @param ba: Byte Array (array de bytes)
+   * @throws IOException: necessário para os métodos
+   *                      de leitura (read) da classe DataInputStream
+   */
   public void fromByteArray(byte[] ba) throws IOException {
     ByteArrayInputStream bais = new ByteArrayInputStream(ba);
     DataInputStream dis = new DataInputStream(bais);
@@ -340,6 +382,13 @@ public class Dao {
     this.saldoConta = dis.readFloat();
   }
 
+  /**
+   * Iguala os atributos de um objeto DAO
+   * à outro
+   * 
+   * @param conta: objeto cujos atributos serão
+   *               passados ao objeto fonte
+   */
   private void clone(Dao conta) {
     this.idConta = conta.getId();
     this.nomePessoa = conta.getNomePessoa();
@@ -349,6 +398,14 @@ public class Dao {
     this.saldoConta = conta.getSaldoConta();
   }
 
+  /**
+   * Checa se existe um registro no arquivo cujo
+   * ID é igual ao recebido no parâmetro
+   * 
+   * @param id: ID a ser checado
+   * @return boolean: true caso o ID seja válidado,
+   *         false caso contrário
+   */
   public static boolean idIsValid(int id) {
     boolean returns = false;
 

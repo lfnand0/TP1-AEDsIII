@@ -2,13 +2,22 @@ import java.util.*;
 
 import dao.*;
 
+/**
+ * CLASSE APP
+ * 
+ * Classe de maior nível da aplicação, responsável pela interface
+ * e pela coleta do input do usuário
+ * 
+ * Comunica-se com a DAO
+ * 
+ */
 public class App {
     static Scanner sc = new Scanner(System.in);
     static Dao conta;
 
     /**
-     * Função responsável por gerar as opções do aplicativo,
-     * podendo o usuário escolher a operação desejada
+     * Função responsável por gerar a interface do app,
+     * para que o usuário escolha a opção desejada
      * 
      * Cada opção chamará a(s) função(ões) responsável(is)
      * pela operação na classe DAO
@@ -16,7 +25,7 @@ public class App {
      * 
      * @return int: O retorno é utilizado na execução principal
      *         (main) para que o aplicativo apenas pare de executar
-     *         quando o valor de @choice for 6
+     *         quando o valor de int choice = 6
      */
     public static int bankInterface() {
         int choice = 0;
@@ -77,7 +86,7 @@ public class App {
                 int idB = sc.nextInt();
 
                 while (idB == idA) {
-                    System.out.println("Selecione um ID diferente do seu: ");
+                    System.out.print("Selecione um ID diferente do seu: ");
                     idB = sc.nextInt();
                 }
 
@@ -91,7 +100,7 @@ public class App {
 
                 if (conta.transfer(idB, valor)) {
                     System.out.println(
-                            "\nTransferência bem sucedida (Seu novo saldo é de " + conta.getSaldoConta() + ").");
+                            "\nTransferência bem-sucedida (Seu novo saldo é de " + conta.getSaldoConta() + ").");
                 } else {
                     System.out.println("\nID não encontrado ou saldo insuficiente");
                 }
@@ -111,7 +120,6 @@ public class App {
                     break;
                 }
                 conta = new Dao(id);
-                conta.toString();
 
                 if (conta.getId() != -1) {
                     System.out.println(conta);
@@ -127,6 +135,7 @@ public class App {
 
                 if (!Dao.idIsValid(id)) {
                     System.out.println("ID inválido.");
+                    break;
                 }
 
                 conta = new Dao(id);
@@ -157,7 +166,7 @@ public class App {
                 break;
 
             case 6:
-
+                System.out.println("Até mais!");
                 break;
         }
 
@@ -165,7 +174,8 @@ public class App {
     }
 
     public static void main(String[] args) throws Exception {
-        while (bankInterface() != 6) {}
+        while (bankInterface() != 6) {
+        }
 
         sc.close();
     }

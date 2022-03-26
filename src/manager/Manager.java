@@ -11,7 +11,7 @@ public class Manager {
     this.dbPath = dbPath;
   }
 
-  private boolean dbExists() {
+  private static boolean dbExists(String dbPath) {
     boolean exists = false;
     RandomAccessFile arq;
 
@@ -39,7 +39,8 @@ public class Manager {
     int maxId = 0;
     RandomAccessFile arq;
 
-    dbExists();
+    dbExists(dbPath);
+
     try {
       arq = new RandomAccessFile(dbPath, "rw");
 
@@ -67,17 +68,17 @@ public class Manager {
    * 
    * 
    */
-  public long findIdPointer(int id) {
+  public static long findIdPointer(int id) {
     long returns = -1;
     RandomAccessFile arq;
+    String dbPath = "../db/bank.db";
 
     try {
       arq = new RandomAccessFile(dbPath, "rw");
 
       arq.seek(0);
       int maxId = arq.readInt();
-      // System.out.println("findIdPointer debug: maxId = " + maxId + "; id = " + id);
-      
+
       if (id <= maxId) {
         int foundId = 0;
         long pointer = arq.getFilePointer();
@@ -99,13 +100,10 @@ public class Manager {
         }
       }
 
-      // System.out.println("returns = " + returns);
-
       arq.close();
     } catch (Exception e) {
     }
 
-    // System.out.println("returns = " + returns);
     return returns;
   }
 
@@ -132,40 +130,22 @@ public class Manager {
     return true;
   }
 
-  public Dao read(int id){
+  public static Dao read(int id) {
     byte[] ba;
     RandomAccessFile arq;
     Dao conta = new Dao();
+    String dbPath = "../db/bank.db";
 
-    if (findIdPointer(id) == -1) {
+    if (findIdPointer(id) == -1 || id <= 0) {
       return conta;
     }
 
-    try{
+    try {
       arq = new RandomAccessFile(dbPath, "rw");
-      
-      arq.seek(findIdPointer(id) + 4); // +4 pois o findIdPointer retorna a posicao antes do registro tam
-      // int tam = arq.readInt();
-      
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      DataOutputStream dos = new DataOutputStream(baos);
-      
-      int idConta = arq.readInt();
-      String nomePessoa = arq.readUTF();
-      String cpf = arq.readUTF();
-      String cidade = arq.readUTF();
-      int transferenciasRealizadas = arq.readInt();
-      float saldoConta = arq.readFloat();
-      System.out.println("read debug");
-      
-      dos.writeInt(idConta);
-      dos.writeUTF(nomePessoa);
-      dos.writeUTF(cpf);
-      dos.writeUTF(cidade);
-      dos.writeInt(transferenciasRealizadas);
-      dos.writeFloat(saldoConta);
-
-      ba = baos.toByteArray();
+      arq.seek(findIdPointer(id));
+      int tam = arq.readInt();
+      ba = new byte[tam];
+      arq.read(ba);
       conta.fromByteArray(ba);
 
       arq.close();
@@ -185,21 +165,15 @@ public class Manager {
 
     try {
       arq = new RandomAccessFile(dbPath, "rw");
-      System.out.println("Debug manager.update: id = " + id + "; " + findIdPointer(id));
       arq.seek(findIdPointer(id));
       int tam = arq.readInt();
 
       if (ba.length <= tam) {
-        System.out.println("man.update first if");
         arq.write(ba);
       } else {
-        Dao temp = new Dao();
-        temp = temp.read(id);
-        System.out.println("man.update second if");
         delete(id);
         appendToFile(ba);
       }
-      System.out.println("man.update after if");
     } catch (Exception e) {
       System.out.println(e);
     }

@@ -37,6 +37,12 @@ public class Dao {
     this.saldoConta = 0.00F;
   }
 
+  public Dao(int id) {
+    this();
+    Dao conta = Dao.read(id);
+    this.clone(conta);
+  }
+
   public int getId() {
     return this.idConta;
   }
@@ -92,14 +98,17 @@ public class Dao {
     return -1;
   }
 
-  public Dao read(int id) {
-    // Dao conta = 
-    return manager.getMaxId() >= id ? manager.read(id) : new Dao();
+  public static Dao read(int id) {
+    Dao conta = new Dao();
+
+    conta = Manager.read(id);
+
+    return conta;
   }
 
   public boolean update() {
 
-    if (manager.findIdPointer(this.idConta) == -1) {
+    if (Manager.findIdPointer(this.idConta) == -1) {
       return false;
     }
 
@@ -163,7 +172,6 @@ public class Dao {
 
     boolean retorno = false;
     try {
-      System.out.println("Debug dao.update: this.idConta = " + this.idConta);
       retorno = manager.update(toByteArray(), this.idConta);
     } catch (Exception e) {
     }
@@ -172,6 +180,30 @@ public class Dao {
 
   public boolean delete(int id) {
     return manager.delete(id);
+  }
+
+  public boolean transfer(int id, float valor) {
+    Dao conta = new Dao(id);
+    boolean retorno = false;
+
+    if (this.saldoConta - valor >= 0) {
+      this.saldoConta -= valor;
+      this.transferenciasRealizadas += 1;
+      conta.setSaldoConta(conta.getSaldoConta() + valor);
+
+      try {
+        byte[] ba = this.toByteArray();
+        manager.update(ba, this.idConta); // Conta 1
+
+        ba = conta.toByteArray();
+        manager.update(ba, conta.getId());
+      } catch (Exception e) {
+      }
+
+      retorno = true;
+    }
+
+    return retorno;
   }
 
   /* PRINT */
@@ -206,11 +238,29 @@ public class Dao {
     ByteArrayInputStream bais = new ByteArrayInputStream(ba);
     DataInputStream dis = new DataInputStream(bais);
 
-    idConta = dis.readInt();
-    nomePessoa = dis.readUTF();
-    cpf = dis.readUTF();
-    cidade = dis.readUTF();
-    transferenciasRealizadas = dis.readInt();
-    saldoConta = dis.readFloat();
+    this.idConta = dis.readInt();
+    this.nomePessoa = dis.readUTF();
+    this.cpf = dis.readUTF();
+    this.cidade = dis.readUTF();
+    this.transferenciasRealizadas = dis.readInt();
+    this.saldoConta = dis.readFloat();
+  }
+
+  private void clone(Dao conta) {
+    this.idConta = conta.getId();
+    this.nomePessoa = conta.getNomePessoa();
+    this.cpf = conta.getCpf();
+    this.cidade = conta.getCidade();
+    this.transferenciasRealizadas = conta.getTransferenciasRealizadas();
+    this.saldoConta = conta.getSaldoConta();
+  }
+
+  public static boolean idIsValid(int id) {
+    boolean returns = false;
+    
+    if (Manager.findIdPointer(id) != -1) 
+      returns = true;
+
+    return returns; 
   }
 }

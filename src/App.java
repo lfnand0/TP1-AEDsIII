@@ -9,7 +9,7 @@ public class App {
     public static int bankInterface() {
         int choice = 0;
 
-        System.out.println("-----Conta Bancária-----");
+        System.out.println("\n-----Conta Bancária-----");
 
         System.out.println("1. Criar uma conta bancária;");
         System.out.println("2. Realizar uma transferência;");
@@ -18,13 +18,14 @@ public class App {
         System.out.println("5. Deletar um registro;");
         System.out.println("6. Sair;");
 
-        System.out.print("Escolha uma opção: ");
+        System.out.print("\nEscolha uma opção: ");
         choice = sc.nextInt();
         while (choice < 1 || choice > 6) {
             System.out.print("Digite um valor de 1 a 6: ");
             choice = sc.nextInt();
         }
 
+        int id;
         switch (choice) {
             case 1:
                 System.out.print("\nDigite o nome: ");
@@ -32,11 +33,9 @@ public class App {
                 String nome = sc.nextLine();
 
                 System.out.print("Digite o cpf: ");
-                // sc.nextLine();
                 String cpf = sc.nextLine();
 
                 System.out.print("Digite a cidade: ");
-                // sc.nextLine();
                 String cidade = sc.nextLine();
 
                 conta = new Dao(nome, cpf, cidade);
@@ -51,20 +50,34 @@ public class App {
                 break;
 
             case 2:
+                System.out.print("\nDigite o ID da sua conta: ");
+                int idA = sc.nextInt();
+                conta = new Dao(idA);
+                System.out.println(conta);
 
+                System.out.print("\nDigite o ID da a conta que sera transferido: ");
+                int idB = sc.nextInt();
+
+                System.out.print("Digite o valor a ser transferido: ");
+                float valor = sc.nextFloat();
+
+                if (conta.transfer(idB, valor)) {
+                    System.out.println("\nTransferencia bem sucedida seu saldo é de " + conta.getSaldoConta());
+                } else {
+                    System.out.println("\nID não encontrado ou saldo insuficiente");
+                }
                 break;
 
             case 3:
                 System.out.print("\nDigite o ID da conta que deseja buscar: ");
-                int idRead = sc.nextInt();
+                id = sc.nextInt();
 
-                while (idRead <= 0) {
+                while (id <= 0) {
                     System.out.print("Digite um ID válido (maior que 0): ");
-                    idRead = sc.nextInt();
+                    id = sc.nextInt();
                 }
 
-                conta = new Dao();
-                conta = conta.read(idRead);
+                conta = new Dao(id);
 
                 if (conta.getId() != -1) {
                     System.out.println(conta);
@@ -76,17 +89,16 @@ public class App {
 
             case 4:
                 System.out.print("\nDigite o ID da conta a ser atualizada: ");
-                int idUpdate = sc.nextInt();
+                id = sc.nextInt();
 
-                while (idUpdate <= 0) {
+                while (id <= 0) {
                     System.out.print("Digite um ID válido (maior que 0): ");
-                    idUpdate = sc.nextInt();
+                    id = sc.nextInt();
                 }
 
-                conta = new Dao();
-                conta = conta.read(idUpdate);
-                // System.out.println("Debug main.update: idUpdate = " + idUpdate);
-                conta.toString();
+                conta = new Dao(id);
+                System.out.println(conta);
+
                 boolean worked = conta.update();
                 if (worked) {
                     System.out.println("Conta atualizada com sucesso!");
@@ -98,19 +110,19 @@ public class App {
 
             case 5:
                 System.out.print("\nDigite o ID da conta a ser deletada: ");
-                int idDelete = sc.nextInt();
+                id = sc.nextInt();
 
-                while (idDelete <= 0) {
+                while (id <= 0) {
                     System.out.print("Digite um ID válido (maior que 0): ");
-                    idDelete = sc.nextInt();
+                    id = sc.nextInt();
                 }
 
                 conta = new Dao();
 
-                if (conta.delete(idDelete)) {
-                    System.out.println("A conta de ID " + idDelete + " foi deletada com sucesso");
+                if (conta.delete(id)) {
+                    System.out.println("A conta de ID " + id + " foi deletada com sucesso");
                 } else {
-                    System.out.println("Erro ao deletar conta de ID " + idDelete);
+                    System.out.println("Erro ao deletar conta de ID " + id);
                 }
                 break;
 
@@ -119,11 +131,13 @@ public class App {
                 break;
         }
 
-        sc.close();
         return choice;
     }
 
     public static void main(String[] args) throws Exception {
-        bankInterface();
+        while (bankInterface() != 6)
+            ;
+
+        sc.close();
     }
 }

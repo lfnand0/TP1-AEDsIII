@@ -2,7 +2,7 @@
 PUC Minas Praça da Liberdade - 3º Período 2022
 
 Alunos: 
-Gabriel Sebe Lucchesi Barbosa
+Gabriel Sebe Lucchesi Barbosa,
 Luiz Fernando Oliveira Maciel
 
 Repositório no Github: 
